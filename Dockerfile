@@ -1,8 +1,9 @@
+ARG CUDA_VERSION=11.2.2
 FROM nvidia/cuda:${CUDA_VERSION}-runtime-ubuntu18.04 as runtime-packages
 
 # note that CUDA_VERSION is set as ENV is nvidia/cuda images.
 # The ENV will take precendence is most situations.
-ARG CUDA_VERSION=11.2.2
+ARG CUDA_VERSION
 ARG CUDA_SHORT_VERSION=11.2
 ARG TENSORRT_VERSION=7.2.2
 # XXX TensorRT 7 is not available for CUDA>=11.2 but TensorFlow
