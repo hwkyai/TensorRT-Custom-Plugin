@@ -157,11 +157,6 @@ const char* FlattenConcatCustomPluginCreator::getPluginVersion() const
     return FlattenConcatCustom_PLUGIN_VERSION;
 }
 
-const PluginFieldCollection* FlattenConcatCustomPluginCreator::getFieldNames()
-{
-    return &mFC;
-}
-
 IPluginV2Ext* FlattenConcatCustomPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
 {
     auto* plugin = new CtcBeamSearchDecoderCustom();
