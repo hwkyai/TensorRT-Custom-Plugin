@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "CtcBeamSearchDecoder.h"
+#include "CtcBeamSearchDecoderCustom.h"
 #include <algorithm>
 #include <cstring>
 #include <cudnn.h>
@@ -25,10 +25,10 @@
 
 using namespace nvinfer1;
 using nvinfer1::plugin::CtcBeamSearchDecoderCustom;
-using nvinfer1::plugin::CtcBeanSearchDecoderPluginCreator;
+using nvinfer1::plugin::CtcBeamSearchDecoderPluginCreator;
 
-static const char* CtcBeanSearchDecoder_PLUGIN_VERSION{"1"};
-static const char* CtcBeanSearchDecoder_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
+static const char* CtcBeamSearchDecoder_PLUGIN_VERSION{"1"};
+static const char* CtcBeamSearchDecoder_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
 
 CtcBeamSearchDecoderCustom::CtcBeamSearchDecoderCustom(const void* data, size_t length)
 {
@@ -139,28 +139,28 @@ IPluginV2Ext* CtcBeamSearchDecoderCustom::clone() const
     return plugin;
 }
 
-CtcBeanSearchDecoderPluginCreator::CtcBeanSearchDecoderPluginCreator()
+CtcBeamSearchDecoderPluginCreator::CtcBeamSearchDecoderPluginCreator()
 {
 }
 
-const char* CtcBeanSearchDecoderPluginCreator::getPluginName() const
+const char* CtcBeamSearchDecoderPluginCreator::getPluginName() const
 {
-    return CtcBeanSearchDecoder_PLUGIN_NAME;
+    return CtcBeamSearchDecoder_PLUGIN_NAME;
 }
 
-const char* CtcBeanSearchDecoderPluginCreator::getPluginVersion() const
+const char* CtcBeamSearchDecoderPluginCreator::getPluginVersion() const
 {
-    return CtcBeanSearchDecoder_PLUGIN_VERSION;
+    return CtcBeamSearchDecoder_PLUGIN_VERSION;
 }
 
-IPluginV2Ext* CtcBeanSearchDecoderPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
+IPluginV2Ext* CtcBeamSearchDecoderPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
 {
     auto* plugin = new CtcBeamSearchDecoderCustom();
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
 
-IPluginV2Ext* CtcBeanSearchDecoderPluginCreator::deserializePlugin(
+IPluginV2Ext* CtcBeamSearchDecoderPluginCreator::deserializePlugin(
     const char* name, const void* serialData, size_t serialLength)
 {
     // This object will be deleted when the network is destroyed, which will
@@ -169,6 +169,6 @@ IPluginV2Ext* CtcBeanSearchDecoderPluginCreator::deserializePlugin(
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
-REGISTER_TENSORRT_PLUGIN(CtcBeanSearchDecoderPluginCreator);
+REGISTER_TENSORRT_PLUGIN(CtcBeamSearchDecoderPluginCreator);
 
 
