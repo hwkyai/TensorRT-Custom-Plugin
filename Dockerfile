@@ -62,6 +62,7 @@ RUN apt-get update -qq && apt-get install -qqy --no-install-recommends \
     libcudnn8-dev=${CUDNN_VERSION}-1+cuda${CUDA_SHORT_VERSION} \
     libnvparsers-dev=${TENSORRT_VERSION}-1+cuda${TENSORRT_CUDA_VERSION} \
     cuda-cudart-dev-${CUDA_SHORT_VERSION/./-} \
+    libcublas-dev-${CUDA_SHORT_VERSION/./-} \
     # prevent upgrades for these packages
     && apt-mark hold \
     libnvinfer7 libnvinfer-plugin7 libcudnn8 libnvparsers7 \
