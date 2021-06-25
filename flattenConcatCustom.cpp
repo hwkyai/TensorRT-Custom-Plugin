@@ -24,301 +24,116 @@
 #include <vector>
 
 using namespace nvinfer1;
-using nvinfer1::plugin::FlattenConcatCustom;
+using nvinfer1::plugin::CtcBeamSearchDecoderCustom;
 using nvinfer1::plugin::FlattenConcatCustomPluginCreator;
 
 static const char* FlattenConcatCustom_PLUGIN_VERSION{"1"};
-static const char* FlattenConcatCustom_PLUGIN_NAME{"FlattenConcatCustom"};
+static const char* FlattenConcatCustom_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
 
 PluginFieldCollection FlattenConcatCustomPluginCreator::mFC{};
 std::vector<PluginField> FlattenConcatCustomPluginCreator::mPluginAttributes;
 
-FlattenConcatCustom::FlattenConcatCustom(int concatAxis, bool ignoreBatch)
-    : mIgnoreBatch(ignoreBatch)
-    , mConcatAxisID(concatAxis)
+CtcBeamSearchDecoderCustom::CtcBeamSearchDecoderCustom(const void* data, size_t length)
 {
-    ASSERT(mConcatAxisID == 1 || mConcatAxisID == 2 || mConcatAxisID == 3);
+    ASSERT(getSerializationSize() == 0);
 }
 
-FlattenConcatCustom::FlattenConcatCustom(
-    int concatAxis, bool ignoreBatch, int numInputs, int outputConcatAxis, const int* inputConcatAxis, size_t* copySize)
-    : mIgnoreBatch(ignoreBatch)
-    , mConcatAxisID(concatAxis)
-    , mOutputConcatAxis(outputConcatAxis)
-    , mNumInputs(numInputs)
+int CtcBeamSearchDecoderCustom::getNbOutputs() const
 {
-    ASSERT(mConcatAxisID == 1 || mConcatAxisID == 2 || mConcatAxisID == 3);
-
-    // Allocate memory for mInputConcatAxis, mCopySize members
-    LOG_ERROR(cudaMallocHost((void**) &mInputConcatAxis, mNumInputs * sizeof(int)));
-    LOG_ERROR(cudaMallocHost((void**) &mCopySize, mNumInputs * sizeof(size_t)));
-
-    // Perform deep copy
-    if (copySize != nullptr)
-    {
-        for (int i = 0; i < mNumInputs; i++)
-        {
-            mCopySize[i] = static_cast<size_t>(copySize[i]);
-        }
-    }
-
-    for (int i = 0; i < mNumInputs; ++i)
-    {
-        mInputConcatAxis[i] = inputConcatAxis[i];
-    }
-
-    // Create cublas context
-    LOG_ERROR(cublasCreate(&mCublas));
+    return -1;
 }
 
-FlattenConcatCustom::FlattenConcatCustom(const void* data, size_t length)
+Dims CtcBeamSearchDecoderCustom::getOutputDimensions(int index, const Dims* inputs, int nbInputDims)
 {
-    const char *d = reinterpret_cast<const char*>(data), *a = d;
-    mIgnoreBatch = read<bool>(d);
-    mConcatAxisID = read<int>(d);
-    ASSERT(mConcatAxisID == 1 || mConcatAxisID == 2 || mConcatAxisID == 3);
-    mOutputConcatAxis = read<int>(d);
-    mNumInputs = read<int>(d);
-    LOG_ERROR(cudaMallocHost((void**) &mInputConcatAxis, mNumInputs * sizeof(int)));
-    LOG_ERROR(cudaMallocHost((void**) &mCopySize, mNumInputs * sizeof(int)));
-
-    std::for_each(mInputConcatAxis, mInputConcatAxis + mNumInputs, [&](int& inp) { inp = read<int>(d); });
-
-    mCHW = read<nvinfer1::DimsCHW>(d);
-
-    std::for_each(mCopySize, mCopySize + mNumInputs, [&](size_t& inp) { inp = read<size_t>(d); });
-
-    ASSERT(d == a + length);
+    
 }
 
-FlattenConcatCustom::~FlattenConcatCustom()
-{
-    if (mInputConcatAxis)
-    {
-        LOG_ERROR(cudaFreeHost(mInputConcatAxis));
-    }
-    if (mCopySize)
-    {
-        LOG_ERROR(cudaFreeHost(mCopySize));
-    }
-}
-
-int FlattenConcatCustom::getNbOutputs() const
-{
-    return 1;
-}
-
-Dims FlattenConcatCustom::getOutputDimensions(int index, const Dims* inputs, int nbInputDims)
-{
-    ASSERT(nbInputDims >= 1);
-    ASSERT(index == 0);
-
-    mNumInputs = nbInputDims;
-    LOG_ERROR(cudaMallocHost((void**) &mInputConcatAxis, nbInputDims * sizeof(int)));
-    int outputConcatAxis = 0;
-
-    for (int i = 0; i < nbInputDims; ++i)
-    {
-        int flattenInput = 0;
-        ASSERT(inputs[i].nbDims == 3);
-        if (mConcatAxisID != 1)
-        {
-            ASSERT(inputs[i].d[0] == inputs[0].d[0]);
-        }
-        if (mConcatAxisID != 2)
-        {
-            ASSERT(inputs[i].d[1] == inputs[0].d[1]);
-        }
-        if (mConcatAxisID != 3)
-        {
-            ASSERT(inputs[i].d[2] == inputs[0].d[2]);
-        }
-        flattenInput = inputs[i].d[0] * inputs[i].d[1] * inputs[i].d[2];
-        outputConcatAxis += flattenInput;
-    }
-
-    return DimsCHW(mConcatAxisID == 1 ? outputConcatAxis : 1, mConcatAxisID == 2 ? outputConcatAxis : 1,
-        mConcatAxisID == 3 ? outputConcatAxis : 1);
-}
-
-int FlattenConcatCustom::initialize()
+int CtcBeamSearchDecoderCustom::initialize()
 {
     return STATUS_SUCCESS;
 }
 
-void FlattenConcatCustom::terminate()
-{
-    LOG_ERROR(cublasDestroy(mCublas));
-}
-
-size_t FlattenConcatCustom::getWorkspaceSize(int) const
+size_t CtcBeamSearchDecoderCustom::getWorkspaceSize(int) const
 {
     return 0;
 }
 
-int FlattenConcatCustom::enqueue(int batchSize, const void* const* inputs, void** outputs, void*, cudaStream_t stream)
+int CtcBeamSearchDecoderCustom::enqueue(int batchSize, const void* const* inputs, void** outputs, void*, cudaStream_t stream)
 {
-    int numConcats = 1;
-    ASSERT(mConcatAxisID != 0);
-    // mCHW is the first input tensor
-    numConcats = std::accumulate(mCHW.d, mCHW.d + mConcatAxisID - 1, 1, std::multiplies<int>());
-
-    LOG_ERROR(cublasSetStream(mCublas, stream));
-
-    // Num concats will be proportional to number of samples in a batch
-    if (!mIgnoreBatch)
-    {
-        numConcats *= batchSize;
-    }
-
-    auto* output = reinterpret_cast<float*>(outputs[0]);
-    int offset = 0;
-    for (int i = 0; i < mNumInputs; ++i)
-    {
-        const auto* input = reinterpret_cast<const float*>(inputs[i]);
-        float* inputTemp;
-        LOG_ERROR(cudaMalloc(&inputTemp, mCopySize[i] * batchSize));
-        LOG_ERROR(cudaMemcpyAsync(inputTemp, input, mCopySize[i] * batchSize, cudaMemcpyDeviceToDevice, stream));
-
-        for (int n = 0; n < numConcats; ++n)
-        {
-            LOG_ERROR(cublasScopy(mCublas, mInputConcatAxis[i], inputTemp + n * mInputConcatAxis[i], 1,
-                output + (n * mOutputConcatAxis + offset), 1));
-        }
-        LOG_ERROR(cudaFree(inputTemp));
-        offset += mInputConcatAxis[i];
-    }
-
+    &outputs = inputs;
     return 0;
 }
 
-size_t FlattenConcatCustom::getSerializationSize() const
+size_t CtcBeamSearchDecoderCustom::getSerializationSize() const
 {
-    return sizeof(bool) + sizeof(int) * (3 + mNumInputs) + sizeof(nvinfer1::Dims) + (sizeof(mCopySize) * mNumInputs);
+    return 0;
 }
 
-void FlattenConcatCustom::serialize(void* buffer) const
+void CtcBeamSearchDecoderCustom::serialize(void* buffer) const
 {
-    char *d = reinterpret_cast<char*>(buffer), *a = d;
-    write(d, mIgnoreBatch);
-    write(d, mConcatAxisID);
-    write(d, mOutputConcatAxis);
-    write(d, mNumInputs);
-    for (int i = 0; i < mNumInputs; ++i)
-    {
-        write(d, mInputConcatAxis[i]);
-    }
-    write(d, mCHW);
-    for (int i = 0; i < mNumInputs; ++i)
-    {
-        write(d, mCopySize[i]);
-    }
-    ASSERT(d == a + getSerializationSize());
+    ASSERT(getSerializationSize() == 0);
 }
 
 // Attach the plugin object to an execution context and grant the plugin the access to some context resource.
-void FlattenConcatCustom::attachToContext(
+void CtcBeamSearchDecoderCustom::attachToContext(
     cudnnContext* cudnnContext, cublasContext* cublasContext, IGpuAllocator* gpuAllocator)
 {
 }
 
 // Detach the plugin object from its execution context.
-void FlattenConcatCustom::detachFromContext() {}
+void CtcBeamSearchDecoderCustom::detachFromContext() {}
 
 // Return true if output tensor is broadcast across a batch.
-bool FlattenConcatCustom::isOutputBroadcastAcrossBatch(int outputIndex, const bool* inputIsBroadcasted, int nbInputs) const
+bool CtcBeamSearchDecoderCustom::isOutputBroadcastAcrossBatch(int outputIndex, const bool* inputIsBroadcasted, int nbInputs) const
 {
     return false;
 }
 
 // Return true if plugin can use input that is broadcast across batch without replication.
-bool FlattenConcatCustom::canBroadcastInputAcrossBatch(int inputIndex) const
+bool CtcBeamSearchDecoderCustom::canBroadcastInputAcrossBatch(int inputIndex) const
 {
     return false;
 }
 
 // Set plugin namespace
-void FlattenConcatCustom::setPluginNamespace(const char* pluginNamespace)
+void CtcBeamSearchDecoderCustom::setPluginNamespace(const char* pluginNamespace)
 {
     mPluginNamespace = pluginNamespace;
 }
 
-const char* FlattenConcatCustom::getPluginNamespace() const
+const char* CtcBeamSearchDecoderCustom::getPluginNamespace() const
 {
     return mPluginNamespace;
 }
 
 // Return the DataType of the plugin output at the requested index
-DataType FlattenConcatCustom::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const
+DataType CtcBeamSearchDecoderCustom::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const
 {
-    ASSERT(index < 3);
     return DataType::kFLOAT;
 }
 
-void FlattenConcatCustom::configurePlugin(const Dims* inputDims, int nbInputs, const Dims* outputDims, int nbOutputs,
-    const DataType* inputTypes, const DataType* outputTypes, const bool* inputIsBroadcast,
-    const bool* outputIsBroadcast, PluginFormat floatFormat, int maxBatchSize)
-{
-    ASSERT(nbOutputs == 1);
-    mCHW = inputDims[0];
-    mNumInputs = nbInputs;
-    ASSERT(inputDims[0].nbDims == 3);
-
-    if (mInputConcatAxis == nullptr)
-    {
-        LOG_ERROR(cudaMallocHost((void**) &mInputConcatAxis, mNumInputs * sizeof(int)));
-    }
-
-    for (int i = 0; i < nbInputs; ++i)
-    {
-        int flattenInput = 0;
-        ASSERT(inputDims[i].nbDims == 3);
-        if (mConcatAxisID != 1)
-        {
-            ASSERT(inputDims[i].d[0] == inputDims[0].d[0]);
-        }
-        if (mConcatAxisID != 2)
-        {
-            ASSERT(inputDims[i].d[1] == inputDims[0].d[1]);
-        }
-        if (mConcatAxisID != 3)
-        {
-            ASSERT(inputDims[i].d[2] == inputDims[0].d[2]);
-        }
-        flattenInput = inputDims[i].d[0] * inputDims[i].d[1] * inputDims[i].d[2];
-        mInputConcatAxis[i] = flattenInput;
-        mOutputConcatAxis += mInputConcatAxis[i];
-    }
-
-    for (int i = 0; i < nbInputs; ++i)
-    {
-        mCopySize[i] = inputDims[i].d[0] * inputDims[i].d[1] * inputDims[i].d[2] * sizeof(float);
-    }
-}
-
-bool FlattenConcatCustom::supportsFormat(DataType type, PluginFormat format) const
+bool CtcBeamSearchDecoderCustom::supportsFormat(DataType type, PluginFormat format) const
 {
     return (type == DataType::kFLOAT && format == PluginFormat::kNCHW);
 }
-const char* FlattenConcatCustom::getPluginType() const
+const char* CtcBeamSearchDecoderCustom::getPluginType() const
 {
-    return "FlattenConcatCustom";
+    return "CtcBeamSearchDecoderCustom";
 }
 
-const char* FlattenConcatCustom::getPluginVersion() const
+const char* CtcBeamSearchDecoderCustom::getPluginVersion() const
 {
     return "1";
 }
 
-void FlattenConcatCustom::destroy()
+void CtcBeamSearchDecoderCustom::destroy()
 {
     delete this;
 }
 
-IPluginV2Ext* FlattenConcatCustom::clone() const
+IPluginV2Ext* CtcBeamSearchDecoderCustom::clone() const
 {
-    auto* plugin
-        = new FlattenConcatCustom(mConcatAxisID, mIgnoreBatch, mNumInputs, mOutputConcatAxis, mInputConcatAxis, mCopySize);
+    auto* plugin = new CtcBeamSearchDecoderCustom();
     plugin->setPluginNamespace(mPluginNamespace);
     return plugin;
 }
@@ -349,23 +164,7 @@ const PluginFieldCollection* FlattenConcatCustomPluginCreator::getFieldNames()
 
 IPluginV2Ext* FlattenConcatCustomPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
 {
-    const PluginField* fields = fc->fields;
-    for (int i = 0; i < fc->nbFields; ++i)
-    {
-        const char* attrName = fields[i].name;
-        if (!strcmp(attrName, "axis"))
-        {
-            ASSERT(fields[i].type == PluginFieldType::kINT32);
-            mConcatAxisID = *(static_cast<const int*>(fields[i].data));
-        }
-        if (!strcmp(attrName, "ignoreBatch"))
-        {
-            ASSERT(fields[i].type == PluginFieldType::kINT32);
-            mIgnoreBatch = *(static_cast<const bool*>(fields[i].data));
-        }
-    }
-
-    auto* plugin = new FlattenConcatCustom(mConcatAxisID, mIgnoreBatch);
+    auto* plugin = new CtcBeamSearchDecoderCustom();
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
@@ -375,7 +174,7 @@ IPluginV2Ext* FlattenConcatCustomPluginCreator::deserializePlugin(
 {
     // This object will be deleted when the network is destroyed, which will
     // call Concat::destroy()
-    IPluginV2Ext* plugin = new FlattenConcatCustom(serialData, serialLength);
+    IPluginV2Ext* plugin = new CtcBeamSearchDecoderCustom(serialData, serialLength);
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }

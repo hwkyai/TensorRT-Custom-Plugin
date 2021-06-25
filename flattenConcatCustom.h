@@ -40,27 +40,20 @@ namespace nvinfer1
 {
 namespace plugin
 {
-class FlattenConcatCustom : public IPluginV2Ext
+class CtcBeamSearchDecoderCustom : public IPluginV2Ext
 {
 public:
-    FlattenConcatCustom(int concatAxis, bool ignoreBatch);
+    CtcBeamSearchDecoderCustom(const void* data, size_t length);
 
-    FlattenConcatCustom(int concatAxis, bool ignoreBatch, int numInputs, int outputConcatAxis, const int* inputConcatAxis,
-        size_t* copySize);
+    ~CtcBeamSearchDecoderCustom() override = default;
 
-    FlattenConcatCustom(const void* data, size_t length);
-
-    ~FlattenConcatCustom() override;
-
-    FlattenConcatCustom() = delete;
+    CtcBeamSearchDecoderCustom() = default;
 
     int getNbOutputs() const override;
 
     Dims getOutputDimensions(int index, const Dims* inputs, int nbInputDims) override;
 
     int initialize() override;
-
-    void terminate() override;
 
     size_t getWorkspaceSize(int) const override;
 
@@ -79,7 +72,7 @@ public:
 
     void configurePlugin(const Dims* inputDims, int nbInputs, const Dims* outputDims, int nbOutputs,
         const DataType* inputTypes, const DataType* outputTypes, const bool* inputIsBroadcast,
-        const bool* outputIsBroadcast, PluginFormat floatFormat, int maxBatchSize) override;
+        const bool* outputIsBroadcast, PluginFormat floatFormat, int maxBatchSize);
 
     bool supportsFormat(DataType type, PluginFormat format) const override;
 
@@ -100,19 +93,7 @@ public:
     const char* getPluginNamespace() const override;
 
 private:
-    Weights copyToDevice(const void* hostData, size_t count);
-
-    void serializeFromDevice(char*& hostBuffer, Weights deviceWeights) const;
-
-    Weights deserializeToDevice(const char*& hostBuffer, size_t count);
-
-    size_t* mCopySize = nullptr;
-    bool mIgnoreBatch{false};
-    int mConcatAxisID{0}, mOutputConcatAxis{0}, mNumInputs{0};
-    int* mInputConcatAxis = nullptr;
-    nvinfer1::Dims mCHW;
     const char* mPluginNamespace;
-    cublasHandle_t mCublas;
 };
 
 class FlattenConcatCustomPluginCreator : public BaseCreator
