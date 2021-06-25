@@ -104,7 +104,6 @@ ENV EXT_PATH=/ext
 # Packages for these libraries do not have a symlink for the default version
 # e.g. somelibrary.so --> somelibrary.so.1
 # So we create them here
-ARG TENSORRT_VERSION
 RUN for l in libnvinfer libnvinfer_plugin libnvparsers libnvonnxparser; do \
         ln --verbose --symbolic ${l}.so.${TENSORRT_VERSION} \
                                 /usr/lib/"$(uname -m)"-linux-gnu/${l}.so; \
@@ -133,6 +132,6 @@ RUN source ${PYTHON_PREFIX}/bin/activate \
     && pip install --no-cache-dir build/dist/*.whl
 
 # Build Custom TensorRT MVP
-WORKDIR /build/custom_plugin
-COPY . .
-RUN mkdir build && cd build && cmake .. && make
+#WORKDIR /build/custom_plugin
+#COPY . .
+#RUN mkdir build && cd build && cmake .. && make
