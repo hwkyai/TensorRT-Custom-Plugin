@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "CtcBeanSearchDecoderCustom.h"
+#include "CtcBeamSearchDecoder.h"
 #include <algorithm>
 #include <cstring>
 #include <cudnn.h>

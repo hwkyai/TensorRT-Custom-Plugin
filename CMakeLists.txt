@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 include_directories(./)
 
-file(GLOB SRC_FILES "./CtcBeanSearchDecoderCustom.cpp")
+file(GLOB SRC_FILES "./CtcBeamSearchDecoder.cpp")
 
 add_compile_options(-std=c++11)
 add_library(ctc_beam_search_decoder SHARED ${SRC_FILES})

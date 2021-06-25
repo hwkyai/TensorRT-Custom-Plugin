@@ -4,7 +4,7 @@
 #include <string>
 #include "NvInfer.h"
 #include "NvUtils.h"
-#include "flattenConcatCustom.h"
+#include "CtcBeamSearchDecoder.h"
 
 using namespace std;
 using namespace nvinfer1;

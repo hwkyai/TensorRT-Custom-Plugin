@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TRT_CtcBeanSearchDecoderCustom_PLUGIN_H
-#define TRT_CtcBeanSearchDecoderCustom_PLUGIN_H
+#ifndef TRT_CtcBeamSearchDecoder_PLUGIN_H
+#define TRT_CtcBeamSearchDecoder_PLUGIN_H
 
 #include "NvInferPlugin.h"
 #include "plugin.h"
@@ -96,12 +96,12 @@ private:
     const char* mPluginNamespace;
 };
 
-class CtcBeanSearchDecoderCustomPluginCreator : public BaseCreator
+class CtcBeamSearchDecoderPluginCreator : public BaseCreator
 {
 public:
-    CtcBeanSearchDecoderCustomPluginCreator();
+    CtcBeamSearchDecoderPluginCreator();
 
-    ~CtcBeanSearchDecoderCustomPluginCreator() override = default;
+    ~CtcBeamSearchDecoderPluginCreator() override = default;
 
     const char* getPluginName() const override;
 
@@ -115,4 +115,4 @@ public:
 } // namespace plugin
 } // namespace nvinfer1
 
-#endif // TRT_CtcBeanSearchDecoderCustom_PLUGIN_H
+#endif // TRT_CtcBeamSearchDecoder_PLUGIN_H
