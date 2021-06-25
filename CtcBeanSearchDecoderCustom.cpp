@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "flattenConcatCustom.h"
+#include "CtcBeanSearchDecoderCustom.h"
 #include <algorithm>
 #include <cstring>
 #include <cudnn.h>
@@ -25,10 +25,10 @@
 
 using namespace nvinfer1;
 using nvinfer1::plugin::CtcBeamSearchDecoderCustom;
-using nvinfer1::plugin::FlattenConcatCustomPluginCreator;
+using nvinfer1::plugin::CtcBeanSearchDecoderPluginCreator;
 
-static const char* FlattenConcatCustom_PLUGIN_VERSION{"1"};
-static const char* FlattenConcatCustom_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
+static const char* CtcBeanSearchDecoder_PLUGIN_VERSION{"1"};
+static const char* CtcBeanSearchDecoder_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
 
 CtcBeamSearchDecoderCustom::CtcBeamSearchDecoderCustom(const void* data, size_t length)
 {
@@ -42,7 +42,7 @@ int CtcBeamSearchDecoderCustom::getNbOutputs() const
 
 Dims CtcBeamSearchDecoderCustom::getOutputDimensions(int index, const Dims* inputs, int nbInputDims)
 {
-    
+    return *inputs;
 }
 
 int CtcBeamSearchDecoderCustom::initialize()
@@ -57,7 +57,11 @@ size_t CtcBeamSearchDecoderCustom::getWorkspaceSize(int) const
 
 int CtcBeamSearchDecoderCustom::enqueue(int batchSize, const void* const* inputs, void** outputs, void*, cudaStream_t stream)
 {
-    outputs = reinterpret_cast<void**>(inputs);
+    for (size_t i = 0; i < batchSize; i++)
+    {
+        outputs[i] = inputs[i];
+    }
+
     return 0;
 }
 
@@ -135,28 +139,28 @@ IPluginV2Ext* CtcBeamSearchDecoderCustom::clone() const
     return plugin;
 }
 
-FlattenConcatCustomPluginCreator::FlattenConcatCustomPluginCreator()
+CtcBeanSearchDecoderPluginCreator::CtcBeanSearchDecoderPluginCreator()
 {
 }
 
-const char* FlattenConcatCustomPluginCreator::getPluginName() const
+const char* CtcBeanSearchDecoderPluginCreator::getPluginName() const
 {
-    return FlattenConcatCustom_PLUGIN_NAME;
+    return CtcBeanSearchDecoder_PLUGIN_NAME;
 }
 
-const char* FlattenConcatCustomPluginCreator::getPluginVersion() const
+const char* CtcBeanSearchDecoderPluginCreator::getPluginVersion() const
 {
-    return FlattenConcatCustom_PLUGIN_VERSION;
+    return CtcBeanSearchDecoder_PLUGIN_VERSION;
 }
 
-IPluginV2Ext* FlattenConcatCustomPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
+IPluginV2Ext* CtcBeanSearchDecoderPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
 {
     auto* plugin = new CtcBeamSearchDecoderCustom();
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
 
-IPluginV2Ext* FlattenConcatCustomPluginCreator::deserializePlugin(
+IPluginV2Ext* CtcBeanSearchDecoderPluginCreator::deserializePlugin(
     const char* name, const void* serialData, size_t serialLength)
 {
     // This object will be deleted when the network is destroyed, which will
@@ -165,6 +169,6 @@ IPluginV2Ext* FlattenConcatCustomPluginCreator::deserializePlugin(
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
-REGISTER_TENSORRT_PLUGIN(FlattenConcatCustomPluginCreator);
+REGISTER_TENSORRT_PLUGIN(CtcBeanSearchDecoderPluginCreator);
 
 
