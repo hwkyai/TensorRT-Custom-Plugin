@@ -110,9 +110,6 @@ public:
     IPluginV2Ext* createPlugin(const char* name, const PluginFieldCollection* fc) override;
 
     IPluginV2Ext* deserializePlugin(const char* name, const void* serialData, size_t serialLength) override;
-
-private:
-    static PluginFieldCollection mFC;
 };
 
 } // namespace plugin

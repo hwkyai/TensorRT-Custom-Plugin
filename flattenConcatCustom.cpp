@@ -30,9 +30,6 @@ using nvinfer1::plugin::FlattenConcatCustomPluginCreator;
 static const char* FlattenConcatCustom_PLUGIN_VERSION{"1"};
 static const char* FlattenConcatCustom_PLUGIN_NAME{"CtcBeamSearchDecoderCustom"};
 
-PluginFieldCollection FlattenConcatCustomPluginCreator::mFC{};
-std::vector<PluginField> FlattenConcatCustomPluginCreator::mPluginAttributes;
-
 CtcBeamSearchDecoderCustom::CtcBeamSearchDecoderCustom(const void* data, size_t length)
 {
     ASSERT(getSerializationSize() == 0);
@@ -140,11 +137,6 @@ IPluginV2Ext* CtcBeamSearchDecoderCustom::clone() const
 
 FlattenConcatCustomPluginCreator::FlattenConcatCustomPluginCreator()
 {
-    mPluginAttributes.emplace_back(PluginField("axis", nullptr, PluginFieldType::kINT32, 1));
-    mPluginAttributes.emplace_back(PluginField("ignoreBatch", nullptr, PluginFieldType::kINT32, 1));
-
-    mFC.nbFields = mPluginAttributes.size();
-    mFC.fields = mPluginAttributes.data();
 }
 
 const char* FlattenConcatCustomPluginCreator::getPluginName() const
