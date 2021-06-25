@@ -57,7 +57,7 @@ size_t CtcBeamSearchDecoderCustom::getWorkspaceSize(int) const
 
 int CtcBeamSearchDecoderCustom::enqueue(int batchSize, const void* const* inputs, void** outputs, void*, cudaStream_t stream)
 {
-    &outputs = inputs;
+    outputs = reinterpret_cast<void**>(inputs);
     return 0;
 }
 
