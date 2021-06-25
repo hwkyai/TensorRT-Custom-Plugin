@@ -7,6 +7,7 @@ add_compile_options(-std=c++11)
 add_library(flatten_concat SHARED ${SRC_FILES})
 
 target_include_directories(flatten_concat PUBLIC /usr/include/x86_64-linux-gnu)
+target_include_directories(flatten_concat PUBLIC /build/python-tensorrt/plugin/common)
 target_include_directories(flatten_concat PUBLIC /usr/local/cuda-11.2/targets/x86_64-linux/include)
 target_include_directories(flatten_concat PUBLIC /usr/local/cuda/include)
 

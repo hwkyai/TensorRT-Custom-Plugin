@@ -132,6 +132,6 @@ RUN source ${PYTHON_PREFIX}/bin/activate \
     && pip install --no-cache-dir build/dist/*.whl
 
 # Build Custom TensorRT MVP
-#WORKDIR /build/custom_plugin
-#COPY . .
-#RUN mkdir build && cd build && cmake .. && make
+WORKDIR /build/custom_plugin
+COPY . .
+RUN mkdir build && cd build && cmake .. && make
