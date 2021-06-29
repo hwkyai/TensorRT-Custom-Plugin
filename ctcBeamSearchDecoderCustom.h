@@ -88,19 +88,7 @@ public:
     IPluginV2IOExt* clone() const override;
 
 private:
-    Weights copyToDevice(const void* hostData, size_t count);
-
-    void serializeFromDevice(char*& hostBuffer, Weights deviceWeights) const;
-
-    Weights deserializeToDevice(const char*& hostBuffer, size_t count);
-
-    std::vector<size_t> mCopySize;
-    std::vector<int> mInputConcatAxis;
-    bool mIgnoreBatch{false};
-    int mConcatAxisID{0}, mOutputConcatAxis{0}, mNumInputs{0};
-    nvinfer1::Dims mCHW;
     std::string mPluginNamespace;
-    cublasHandle_t mCublas{nullptr};
 };
 
 class CtcBeamSearchCustomPluginCreator : public BaseCreator
@@ -122,8 +110,6 @@ public:
 
 private:
     static PluginFieldCollection mFC;
-    bool mIgnoreBatch{false};
-    int mConcatAxisID;
     static std::vector<PluginField> mPluginAttributes;
 };
 
