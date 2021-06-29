@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 include_directories(./)
 
-file(GLOB SRC_FILES "./CtcBeamSearchDecoderCustom.cpp")
+file(GLOB SRC_FILES "./ctcBeamSearchDecoderCustom.cpp")
 
 add_compile_options(-std=c++11)
 add_library(ctc_beam_search_decoder SHARED ${SRC_FILES})
@@ -16,7 +16,7 @@ target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libnvpar
 target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libnvinfer_static.a)
 target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libnvinfer_plugin_static.a)
 target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libstdc++.so.6)
-target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libcudnn_static.a /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcublas_static.a)
+target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libcudnn_static.a)
 target_link_libraries(ctc_beam_search_decoder /usr/local/cuda-11.2/targets/x86_64-linux/lib/libculibos.a)
-target_link_libraries(ctc_beam_search_decoder /usr/lib/x86_64-linux-gnu/libcudart.a)
-
+target_link_libraries(ctc_beam_search_decoder /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcudart_static.a)
+target_link_libraries(ctc_beam_search_decoder /usr/local/cuda-11.2/targets/x86_64-linux/lib/libcublas_static.a)
