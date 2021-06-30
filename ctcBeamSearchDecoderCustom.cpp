@@ -31,12 +31,8 @@ using nvinfer1::plugin::CtcBeamSearchCustomPluginCreator;
 static const char* CTCBEAMSEARCHCUSTOM_PLUGIN_VERSION{"1"};
 static const char* CTCBEAMSEARCHCUSTOM_PLUGIN_NAME{"CtcBeamSearchCustom_TRT"};
 
-PluginFieldCollection CtcBeamSearchCustomPluginCreator::mFC{};
+PluginFieldCollection CtcBeamSearchCustomPluginCreator::mFC = {};
 std::vector<PluginField> CtcBeamSearchCustomPluginCreator::mPluginAttributes;
-
-CtcBeamSearchCustom::CtcBeamSearchCustom(const void* data, size_t length)
-{
-}
 
 CtcBeamSearchCustom::~CtcBeamSearchCustom() {}
 
@@ -47,7 +43,8 @@ int CtcBeamSearchCustom::getNbOutputs() const
 
 Dims CtcBeamSearchCustom::getOutputDimensions(int index, const Dims* inputs, int nbInputDims)
 {
-    return Dims3(1,1,1);
+    ASSERT(index < nbInputDims);
+    return inputs[index];
 }
 
 int CtcBeamSearchCustom::initialize()
@@ -57,7 +54,7 @@ int CtcBeamSearchCustom::initialize()
 
 void CtcBeamSearchCustom::terminate() {}
 
-size_t CtcBeamSearchCustom::getWorkspaceSize(int) const
+size_t CtcBeamSearchCustom::getWorkspaceSize(int maxBatchSize) const
 {
     return 0;
 }
@@ -74,13 +71,11 @@ int CtcBeamSearchCustom::enqueue(int batchSize, const void* const* inputs, void*
 
 size_t CtcBeamSearchCustom::getSerializationSize() const
 {
-    // TODO
-    return 1;
+    return 0;
 }
 
 void CtcBeamSearchCustom::serialize(void* buffer) const
 {
-    // TODO: serialize
 }
 
 // Attach the plugin object to an execution context and grant the plugin the access to some context resource.
@@ -95,13 +90,14 @@ void CtcBeamSearchCustom::detachFromContext() {}
 // Return true if output tensor is broadcast across a batch.
 bool CtcBeamSearchCustom::isOutputBroadcastAcrossBatch(int outputIndex, const bool* inputIsBroadcasted, int nbInputs) const
 {
-    return false;
+    ASSERT(outputIndex < nbInputs)
+    return inputIsBroadcasted[outputIndex];
 }
 
 // Return true if plugin can use input that is broadcast across batch without replication.
 bool CtcBeamSearchCustom::canBroadcastInputAcrossBatch(int inputIndex) const
 {
-    return false;
+    return true;
 }
 
 // Set plugin namespace
@@ -118,19 +114,17 @@ const char* CtcBeamSearchCustom::getPluginNamespace() const
 // Return the DataType of the plugin output at the requested index
 DataType CtcBeamSearchCustom::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const
 {
-    ASSERT(index < 3);
-    return DataType::kFLOAT;
+    ASSERT(index < nbInputs);
+    return inputTypes[index];
 }
 
-void configurePlugin(const PluginTensorDesc* in, int nbInput, const PluginTensorDesc* out, int nbOutput)
+void CtcBeamSearchCustom::configurePlugin(const PluginTensorDesc* in, int nbInput, const PluginTensorDesc* out, int nbOutput)
 {
-    // TODO: configure plugin
 }
 
 bool CtcBeamSearchCustom::supportsFormatCombination(int pos, const PluginTensorDesc* inOut, int nbInputs, int nbOutputs) const
 {
     return true;
-    // return (type == DataType::kFLOAT && format == PluginFormat::kNCHW);
 }
 const char* CtcBeamSearchCustom::getPluginType() const
 {
@@ -154,14 +148,6 @@ IPluginV2IOExt* CtcBeamSearchCustom::clone() const
     return plugin;
 }
 
-CtcBeamSearchCustomPluginCreator::CtcBeamSearchCustomPluginCreator()
-{
-    mPluginAttributes.emplace_back(PluginField("dummy", nullptr, PluginFieldType::kINT32, 1));
-
-    mFC.nbFields = mPluginAttributes.size();
-    mFC.fields = mPluginAttributes.data();
-}
-
 const char* CtcBeamSearchCustomPluginCreator::getPluginName() const
 {
     return CTCBEAMSEARCHCUSTOM_PLUGIN_NAME;
@@ -174,22 +160,23 @@ const char* CtcBeamSearchCustomPluginCreator::getPluginVersion() const
 
 const PluginFieldCollection* CtcBeamSearchCustomPluginCreator::getFieldNames()
 {
-    return &mFC;
+    return nullptr;
 }
 
-IPluginV2Ext* CtcBeamSearchCustomPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
+CtcBeamSearchCustom* CtcBeamSearchCustomPluginCreator::createPlugin(const char* name, const PluginFieldCollection* fc)
 {
     auto* plugin = new CtcBeamSearchCustom();
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }
 
-IPluginV2Ext* CtcBeamSearchCustomPluginCreator::deserializePlugin(
+CtcBeamSearchCustom* CtcBeamSearchCustomPluginCreator::deserializePlugin(
     const char* name, const void* serialData, size_t serialLength)
 {
     // This object will be deleted when the network is destroyed, which will
     // call Concat::destroy()
-    IPluginV2Ext* plugin = new CtcBeamSearchCustom(serialData, serialLength);
+    // IPluginV2Ext* plugin = new CtcBeamSearchCustom();
+    auto* plugin = new CtcBeamSearchCustom();
     plugin->setPluginNamespace(mNamespace.c_str());
     return plugin;
 }

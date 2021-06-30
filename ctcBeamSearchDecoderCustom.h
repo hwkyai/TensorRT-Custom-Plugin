@@ -53,7 +53,7 @@ public:
 
     void terminate() override;
 
-    size_t getWorkspaceSize(int) const override;
+    size_t getWorkspaceSize(int maxBatchSize) const override;
 
     int enqueue(
         int batchSize, const void* const* inputs, void** outputs, void* workspace, cudaStream_t stream) override;
@@ -94,7 +94,7 @@ private:
 class CtcBeamSearchCustomPluginCreator : public BaseCreator
 {
 public:
-    CtcBeamSearchCustomPluginCreator();
+    CtcBeamSearchCustomPluginCreator() = default;
 
     ~CtcBeamSearchCustomPluginCreator() override = default;
 
@@ -104,9 +104,9 @@ public:
 
     const PluginFieldCollection* getFieldNames() override;
 
-    IPluginV2Ext* createPlugin(const char* name, const PluginFieldCollection* fc) override;
+    CtcBeamSearchCustom* createPlugin(const char* name, const PluginFieldCollection* fc) override;
 
-    IPluginV2Ext* deserializePlugin(const char* name, const void* serialData, size_t serialLength) override;
+    CtcBeamSearchCustom* deserializePlugin(const char* name, const void* serialData, size_t serialLength) override;
 
 private:
     static PluginFieldCollection mFC;
