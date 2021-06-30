@@ -29,7 +29,7 @@ using nvinfer1::plugin::CtcBeamSearchCustom;
 using nvinfer1::plugin::CtcBeamSearchCustomPluginCreator;
 
 static const char* CTCBEAMSEARCHCUSTOM_PLUGIN_VERSION{"1"};
-static const char* CTCBEAMSEARCHCUSTOM_PLUGIN_NAME{"CtcBeamSearchCustom_TRT"};
+static const char* CTCBEAMSEARCHCUSTOM_PLUGIN_NAME{"CTCBeamSearchDecoder"};
 
 PluginFieldCollection CtcBeamSearchCustomPluginCreator::mFC = {};
 std::vector<PluginField> CtcBeamSearchCustomPluginCreator::mPluginAttributes;
